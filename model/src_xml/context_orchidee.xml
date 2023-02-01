@@ -1,0 +1,270 @@
+<!-- =========================================================================================================== -->
+<!-- ORCHIDEE context                                                                                            -->
+<!-- context_orchidee.xml : Configuration file for ORCHIDEE for production of output files using XIOS            -->
+<!--                                                                                                             -->
+<!-- $HeadURL$                -->
+<!-- $Date$                                                     -->
+<!-- $Revision$                                                                                           -->
+<!-- =========================================================================================================== -->
+<context id="orchidee">
+  
+  
+  <!-- =========================================================================================================== -->
+  <!-- Definition of all existing variables                                                                        -->
+  <!-- DO NOT CHANGE THIS FILE                                                                                     -->
+  <!-- =========================================================================================================== -->
+  <field_definition src="./field_def_orchidee.xml"/>
+  
+  
+  <!-- =========================================================================================================== -->
+  <!-- Definition of input files                                                                                   -->
+  <!-- DO NOT CHANGE THIS FILE                                                                                     -->
+  <!-- =========================================================================================================== -->
+  <file_definition src="./file_def_input_orchidee.xml"/>
+
+
+  <!-- =========================================================================================================== -->
+  <!-- Definition of output files                                                                                  -->
+  <!-- Definition of variables or groups included in the different files                                           -->
+  <!-- CHANGE THIS FILE BY ADDING THE FILES AND/OR VARIABLES YOU WANT TO PRODUCE                                   -->
+  <!-- Only variables and groups existing in field_def_orchidee.xml can be used                                    -->
+  <!-- =========================================================================================================== -->
+  <file_definition src="./file_def_orchidee.xml"/>
+  
+  
+  <!-- =========================================================================================================== -->
+  <!-- Definition of horizontal domain                                                                             -->
+  <!-- =========================================================================================================== -->
+  <domain_definition>
+    <domain id="domain_landpoints"/>
+
+    <domain id="domain_inputfile_moistc" type="rectilinear">
+      <generate_rectilinear_domain />
+    </domain>
+
+    <domain id="domain_inputfile_snow" type="rectilinear">
+      <generate_rectilinear_domain />
+    </domain>
+
+    <domain id="greordered"  domain_ref="domain_landpoints">
+      <reorder_domain invert_lat="true" shift_lon_fraction="0.5" min_lon="0" max_lon="360" />
+    </domain>
+
+  </domain_definition>
+  
+  <!-- =========================================================================================================== -->
+  <!-- Definition of vertical axis and extra dimensions                                                            -->
+  <!-- =========================================================================================================== -->
+  <axis_definition>
+    <!-- Vertical axis and extra dimensions in sechiba -->
+    <axis id="nvm" name="veget" standard_name="model_level_number" long_name="Vegetation types" unit="1"/>
+    <axis id="nlut" name="nlut" standard_name="landusetype4" long_name="Number of land use types specified by LUMIP" unit="1"/>
+    <axis id="ncarb" name="ncarb" standard_name="ncarb" long_name="Number of soil carbon pools" unit="1"/>
+    <axis id="nlaip1" name="laiax" standard_name="model_level_number" long_name="Interface of LAI layers" unit="1"/>
+    <axis id="ngrnd" name="solth" standard_name="model_level_number" long_name="Thermal soil levels" unit="m"/>
+    <axis id="nstm" name="soiltyp" standard_name="model_level_number" long_name="Soil tiles" unit="1"/>
+    <axis id="nnobio" name="nobio" standard_name="model_level_number" long_name="Other surface types" unit="1"/>
+    <axis id="albtyp" standard_name="model_level_number" long_name="Albedo types" unit="1"/>
+    <axis id="nslm" name="solay" standard_name="model_level_number" long_name="Hydrological soil levels" unit="1"/>
+    <axis id="nsnow" name="snowlev" standard_name="model_level_number" long_name="Snow levels" unit="1"/>
+    <axis id="nvmap" name="nvmap" standard_name="model_level_number" long_name="The number of PFTs we have if we ignore age classes" unit="1"/>
+
+    <!-- Vertical axis and extra dimensions in stomate -->
+    <axis id="ndeep" standard_name="model_level_number" long_name="Number of soil layers" unit="1"/> 
+    <axis id="nwp" standard_name="model_level_number" long_name="Number of types of wood product pool considered" unit="1"/> 
+    <axis id="P10" standard_name="model_level_number" long_name="Pool 10 years" unit="1"/>
+    <axis id="P100" standard_name="model_level_number" long_name="Pool 100 years" unit="1"/>
+    <axis id="P11" standard_name="model_level_number" long_name="Pool 10 years + 1" unit="1"/>
+    <axis id="P101" standard_name="model_level_number" long_name="Pool 100 years + 1" unit="1"/>
+  </axis_definition>
+
+
+  <!-- =========================================================================================================== -->
+  <!-- Definition of output and input grids                                                                        -->
+  <!-- =========================================================================================================== -->
+  <grid_definition>
+
+    <!-- Definition of output grids -->
+    <grid id="grid_landpoints">
+      <domain domain_ref="domain_landpoints" />
+    </grid>
+
+    <grid id="grid_ndeep_nvm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="ndeep" />
+      <axis axis_ref="nvm" />
+    </grid>
+
+    <grid id="grid_nphs_nvm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nphs" />
+      <axis axis_ref="nvm" />
+    </grid>
+	
+    <grid id="grid_nvm_nvmap">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nvm" />
+      <axis axis_ref="nvmap" />
+    </grid>
+
+    <grid id="grid_nsnow_nvm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nsnow" />
+      <axis axis_ref="nvm" />
+    </grid>
+
+    <grid id="grid_P10_nwp">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P10" />
+      <axis axis_ref="nwp" />
+    </grid>
+	
+    <grid id="grid_P11_nwp">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P11" />
+      <axis axis_ref="nwp" />
+    </grid>
+	
+    <grid id="grid_P100_nwp">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P100" />
+      <axis axis_ref="nwp" />
+    </grid>
+	
+    <grid id="grid_P101_nwp">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P101" />
+      <axis axis_ref="nwp" />
+    </grid>
+
+    <grid id="grid_nslm_nstm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nslm" />
+      <axis axis_ref="nstm" />
+    </grid>
+<!--    <grid id="grid_nslm_nstm">
+      <domain domain_ref="domain_landpoints" >
+        <interpolate_domain order="1"/>
+      </domain>
+      <axis axis_ref="nslm" />
+      <axis axis_ref="nstm" />
+    </grid>-->
+
+    <grid id="grid_nvm_nstm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nvm" />
+      <axis axis_ref="nstm" />
+    </grid>
+
+    <grid id="grid_ngrnd_nvm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="ngrnd" />
+      <axis axis_ref="nvm" />
+    </grid>
+
+    <grid id="grid_nvm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nvm" />
+    </grid>
+
+    <grid id="grid_nlut">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nlut" />
+    </grid>
+
+    <grid id="grid_ncarb">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="ncarb" />
+    </grid>
+
+    <grid id="grid_nstm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nstm" />
+    </grid>
+
+    <grid id="grid_nslm">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nslm" />
+    </grid>
+
+    <grid id="grid_ngrnd">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="ngrnd" />
+    </grid>
+
+    <grid id="grid_albtyp">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="albtyp" />
+    </grid>
+
+    <grid id="grid_nnobio">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nnobio" />
+    </grid>
+
+    <grid id="grid_nlaip1">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nlaip1" />
+    </grid>
+
+    <grid id="grid_nsnow">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nsnow" />
+    </grid>
+
+    <grid id="grid_nsnow2">
+      <domain domain_ref="domain_landpoints" >
+        <interpolate_domain order="1"/>
+      </domain>
+      <axis axis_ref="nsnow" />
+    </grid>-->
+
+    <grid id="grid_P10">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P10" />
+    </grid>
+
+    <grid id="grid_P11">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P11" />
+    </grid>
+
+    <grid id="grid_P100">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P100" />
+    </grid>
+
+    <grid id="grid_P101">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="P101" />
+    </grid>
+
+    <grid id="grid_nwp">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nwp" />
+    </grid>
+
+    <grid id="grid_ndeep">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="ndeep" />
+    </grid>
+
+    <grid id="grid_nphs">
+      <domain domain_ref="domain_landpoints" />
+      <axis axis_ref="nphs" />
+    </grid>
+
+    <!-- Definition of input grids -->
+    <grid id="grid_inputfile_moistc">
+      <domain domain_ref="domain_inputfile_moistc"/>
+      <axis axis_ref="nslm" />
+      <axis axis_ref="nstm" />
+    </grid>  
+
+    <grid id="grid_inputfile_snow">
+      <domain domain_ref="domain_inputfile_snow"/>
+      <axis axis_ref="nsnow" />
+    </grid>  
+  </grid_definition>
+  
+</context>

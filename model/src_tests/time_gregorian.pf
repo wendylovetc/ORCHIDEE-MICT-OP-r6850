@@ -1,0 +1,164 @@
+! ===================================================================================================\n
+! MODULE        : test_time_gregorian
+!
+! CONTACT       : orchidee-help _at_ listes.ipsl.fr
+!
+! LICENCE       : IPSL (2006)
+! This software is governed by the CeCILL licence see ORCHIDEE/ORCHIDEE_CeCILL.LIC
+!
+!>\BRIEF        Unit tests for time module in gregorian calendar
+!!
+!!\n DESCRIPTION : 
+!!
+!! real tests
+!!    CALL test_time_gregorian_get_day_of_year(1988, 2, 29, 60)
+!!    CALL test_time_gregorian_get_day_of_year(1989, 2, 28, 59) 
+!!    CALL test_time_gregorian_get_day_of_year(1988, 12, 31, 366)
+!!    CALL test_time_gregorian_get_day_of_year(1989, 12, 31, 365)
+!!
+!!
+!! RECENT CHANGE(S) : None
+!!
+!! REFERENCE(S) :
+!!
+!! SVN          :
+!! $HeadURL: svn://forge.ipsl.jussieu.fr/orchidee/branches/ORCHIDEE-MICT/ORCHIDEE/src_sechiba/hydrol.f90 $
+!! $Date: 2018-10-09 11:43:16 +0200 (Tue, 09 Oct 2018) $
+!! $Revision: 5477 $
+!! \n
+!_ ===============================================================================================\n
+
+module time_gregorian_mod
+
+  use time
+  use ioipsl
+  use pfunit_mod
+  implicit none
+
+  public :: testcase_time_gregorian
+
+  @testParameter
+  type, extends(AbstractTestParameter) :: TestDateParam 
+      integer :: year
+      integer :: month
+      integer :: day
+      integer :: totalDays 
+  contains
+      procedure :: toString
+  end type TestDateParam 
+
+  @TestCase(testParameters={getParameters()}, constructor=newTest)
+  type, extends(ParameterizedTestCase) :: testcase_time_gregorian
+      integer :: year
+      integer :: month
+      integer :: day
+      integer :: totalDays 
+
+    contains
+      procedure :: setUp     ! overides generic
+      procedure :: tearDown  ! overrides generic
+  end type testcase_time_gregorian
+
+contains
+
+! Constructor
+   function newTest(testParameter) result(tst)
+      type (testcase_time_gregorian) :: tst
+      type (TestDateParam), intent(in) :: testParameter
+
+      integer :: year 
+      integer :: month
+      integer :: day
+      integer :: totalDays
+
+      tst%year = testParameter%year
+      tst%month = testParameter%month
+      tst%day = testParameter%day
+      tst%totalDays = testParameter%totalDays
+
+   end function newTest  
+
+!-------------------
+   function getParameters() result(params)
+      type (TestDateParam), allocatable :: params(:)
+
+!                        year   month  day   result
+      params = [ &
+           & TestDateParam(   1988,    2,   29,  60), &
+           & TestDateParam(   1989,    2,   28,  59), &
+           & TestDateParam(   1988,   12,   31,  366), &
+           & TestDateParam(   1989,   12,   31,  365) &
+           & ]
+
+   end function getParameters
+
+
+
+@Test
+   subroutine test_time_get_day_of_year(this)
+      class (Testcase_time_gregorian), intent(inout) :: this
+
+      INTEGER :: daysFound
+
+      daysFound = time_get_day_of_year(this%year, this%month, this%day)
+
+      @assertEqual(this%totalDays, daysFound, message='Calculated days do not match;')
+
+   end subroutine test_time_get_day_of_year
+
+
+   function toString(this) result(string)
+      class (TestDateParam), intent(in) :: this
+      character(:), allocatable :: string
+
+      character(len=500) :: buffer
+
+      write(buffer,'("(year,month,day,result)=(",i4,",",i2,",",i2,",",i4,")")') &
+           & this%year, this%month, this%day, this%totalDays
+      string = trim(buffer)
+
+   end function toString
+  
+!! ================================================================================================================================
+!! SUBROUTINE 	: test_time_gregorian_setUp
+!!
+!>\BRIEF         Initialize IOISPL calendar (gregorian)
+!!
+!! DESCRIPTION : 
+!!
+!! MAIN OUTPUT VARIABLE(S) : 
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+  SUBROUTINE setUp(this)
+    class (testcase_time_gregorian), intent(inout) :: this
+
+    CALL ioconf_calendar('gregorian')
+
+  END SUBROUTINE setUp
+  
+!! ================================================================================================================================
+!! SUBROUTINE 	: test_time_gregorian_tearDown
+!!
+!>\BRIEF         release IOISPL calendar
+!!
+!! DESCRIPTION : 
+!!
+!! MAIN OUTPUT VARIABLE(S) : 
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+  SUBROUTINE tearDown(this)
+    class (testcase_time_gregorian), intent(inout) :: this
+    LOGICAL :: old_stats
+
+    CALL lock_calendar (.FALSE., old_stats)
+  END SUBROUTINE tearDown
+  
+end module time_gregorian_mod 

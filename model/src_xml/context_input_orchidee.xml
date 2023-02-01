@@ -1,0 +1,395 @@
+<!-- =========================================================================================================== -->
+<!-- ORCHIDEE context for input files                                                                            -->
+<!-- context_input_orchidee.xml : Configuration file for ORCHIDEE for reading of input files using XIOS          -->
+<!-- This file must be included from iodef.xml                                                                   -->
+<!-- All specifications specific for the reading and interpolating of input files are regrouped in this file.    -->
+<!-- Find below sections for file_definition, field_definition, domain_definition, grid_definition and           -->
+<!-- variable_definition.                                                                                        -->
+<!--                                                                                                             -->
+<!-- $HeadURL: svn://forge.ipsl.jussieu.fr/orchidee/trunk/ORCHIDEE/src_xml/context_input_orchidee.xml $                -->
+<!-- $Date: 2019-08-13 16:49:03 +0200 (Tue, 13 Aug 2019) $                                                      -->
+<!-- $Revision: 6159 $                                                                                           -->
+<!-- =========================================================================================================== -->
+<context id="orchidee">
+
+
+  <!-- ========================================================================================================= -->
+  <!-- Definition of input files                                                                                 -->
+  <!-- The input files are activated or desactivated from the source code depending on simulation set up.        -->
+  <!-- The file names are set from the fortran code using default names or user choosen names read from run.def. -->
+  <!-- The variables are here on the input source grid.                                                          -->
+  <!-- Different treatment are done accordig to the file.                                                        -->
+  <!-- Values higher than 1e10 are for some files considered as missing values and the field is then set to 0.   -->
+  <!-- A normalization are sometimes done with the fraction of the grid cell.                                    -->
+  <!-- Sometimes, if only missing values are found for a grid cell, then a default value is set.                 -->
+  <!-- ========================================================================================================= -->
+ 
+  <file_definition>
+
+    <file id="soils_param_file" mode="read" output_freq="1y" enabled="true">
+      <field id="soilcolor" name="soilcolor" domain_ref="soil" operation="instant" freq_offset="1ts"/>
+      <field id="soiltext" name="soiltext" domain_ref="soil" operation="instant" freq_offset="1ts"/>
+    </file>
+    
+    <!-- Default file name: soil_bulk_and_ph.nc for both soilbulk and soilph. The variables can be read from different files, specified in run.def
+         This file is read in the initialization phase only if there is no restart file.
+         For soilbulk and soilph, set values lower than min_sechiba as masked values because missing values are zero in the file.
+         Renormalization will be done later using the interpolated mask.  -->
+    <file id="soilbulk_file" mode="read" output_freq="1y" enabled="true">
+      <field id="soilbulk_mask_read" name="soilbulk" domain_ref="soilbulk" operation="instant" freq_offset="1ts" > this &gt; $min_sechiba ? 1 : 0 </field>
+      <field id="soilbulk_read" name="soilbulk" domain_ref="soilbulk" operation="instant" freq_offset="1ts" > this &gt; $min_sechiba ? this : 0 </field>
+    </file>
+
+    <file id="soilph_file" mode="read" output_freq="1y" enabled="true">
+      <field id="soilph_mask_read" name="soilph" domain_ref="soilph" operation="instant" freq_offset="1ts" > this &gt; 0.1 ? 1 : 0 </field>
+      <field id="soilph_read" name="soilph" domain_ref="soilph" operation="instant" freq_offset="1ts" > this &gt; 0.1 ? this : 0 </field>
+    </file>
+
+    <!-- Default file name: PFTmap.nc -->
+    <file  id="PFTmap_file"  mode="read" output_freq="1y">
+      <field id="maxvegetfrac_read"  name="maxvegetfrac" domain_ref="pft" axis_ref="nvm" operation="instant"  freq_offset="1ts"> this &lt; 1e10 ? this : 0 </field>
+      <field id="maxvegetfrac_mask"  name="maxvegetfrac" domain_ref="pft" axis_ref="nvm" operation="instant"  freq_offset="1ts"> this &lt; 1e10 ? 1 : 0 </field>
+    </file>
+    
+    <!-- Default file name: cartepente2d_15min.nc -->
+    <file id="topography_file"  mode="read" output_freq="1y">
+      <!--      <field id="pente"  domain_ref="topo"  operation="instant"  freq_offset="1ts" > (this &gt; 1e10) ? 1 : this </field>     ==> In reference, missing value are use for computing, this probably wrong -->
+      <field id="pente_read"       name="pente" domain_ref="topo"  operation="instant"  freq_offset="1ts" > ((this/$slope_noreinf) &lt; 1)? this/$slope_noreinf : 1 </field>
+      <field id="mask_pente_read"  name="pente" domain_ref="topo"  operation="instant"  freq_offset="1ts" > (this &lt; $min_sechiba)? 0 : 1                         </field>  <!-- create mask -->
+    </file>
+    
+    <file id="albedo_file" mode="read" output_freq="1y">
+      <field id="mask_alb_read"    name="mask"       domain_ref="albedo"  operation="instant"  freq_offset="1ts" />
+      <field id="bg_alb_vis_read"  name="bg_alb_vis" domain_ref="albedo"  operation="instant"  freq_offset="1ts" >  mask_alb_read &gt; 0.99 ? this : $missing_value  </field>
+      <field id="bg_alb_nir_read"  name="bg_alb_nir" domain_ref="albedo"  operation="instant"  freq_offset="1ts" >  mask_alb_read &gt; 0.99 ? this : $missing_value  </field>
+    </file>
+    
+    <file id="lai_file" mode="read" output_freq="1y" time_counter_name="toto" cyclic="true">
+      <field id="lai_read"       name="LAI" grid_ref="lai" operation="instant"  freq_offset="1ts" > this &gt; 20 ? 0 : this </field>
+      <field id="mask_lai_read"  name="LAI" grid_ref="lai" operation="instant"  freq_offset="1ts" > this &gt; 20 ? 0 : 1    </field>  <!-- create mask -->
+    </file>
+
+    <file id="fertilizer_file" mode="read" output_freq="1y" cyclic="true">
+      <field id="N_qt_OTHER_year_read"  name="N_qt_OTHER_year" domain_ref="fertilizer" operation="instant"  freq_offset="1ts"/>
+      <field id="N_qt_WRICE_year_read"  name="N_qt_WRICE_year" domain_ref="fertilizer" operation="instant"  freq_offset="1ts"/>
+    </file>
+    
+    <file id="bbg_clim_file" mode="read" output_freq="1y" cyclic="true">
+      <field id="flx_co2_bbg_year_read"  name="flx_co2_bbg_year" domain_ref="bbg_clim" operation="instant"  freq_offset="1ts"/>
+    </file>
+    
+    <file id="reftemp_file" mode="read" output_freq="1y" cyclic="true">
+      <field id="reftemp_read"  name="temperature" domain_ref="reftemp" operation="instant"  freq_offset="1ts"/>
+    </file>
+    
+    <file id="woodharvest_file" mode="read" output_freq="1y" cyclic="true">
+      <field id="woodharvest_read"  name="woodharvest" domain_ref="woodharvest" operation="instant"  freq_offset="1ts"/>
+    </file>
+    
+    
+    
+    <file id="interp_diag" output_freq="1ts" sync_freq="1ts" enabled=".FALSE.">
+      <field_group domain_ref="domain_landpoints" operation="once" default_value="9.96921e+36">
+        <field id="interp_diag_aveget" name="aveget" />
+        <field id="interp_diag_vegetrefrac" name="vegetrefrac" axis_ref="nvm"/>
+        <field id="interp_diag_atext" name="atext" />
+        <field id="interp_diag_soilclass" name="soilclass"     axis_ref="ncsm"/>
+        <field id="interp_diag_clayfraction" name="clayfraction"  />
+        <field id="interp_diag_aslope" name="aslope"    />
+        <field id="interp_diag_reinf_slope" name="reinf_slope"  />
+	
+        <field id="interp_diag_alb_vis" name="alb_vis"  />
+        <field id="interp_diag_alb_nir" name="alb_nir"  />
+	
+        <field id="interp_diag_N_qt_WRICE_year" name="wrice"  />
+        <field id="interp_diag_N_qt_OTHER_year" name="other"  />
+        <field id="interp_diag_flx_co2_bbg_year" name="co2_bbg"  />
+	
+      </field_group>
+      <field id="interp_diag_lai" grid_ref="from_lai" name="lai"  operation="once" default_value="9.96921e+36" enabled="false"/>
+      <field field_ref="mask_alb_read" operation="once" default_value="9.96921e+36"  freq_offset="0ts" enabled="false"/>
+    </file>
+
+
+    <file id="nudge_moistc" name="nudge_moistc" type="one_file" mode="read" output_freq="1d">
+      <field  id="moistc_in" name="moistc" operation="instant" grid_ref="grid_inputfile_moistc" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+      <field  id="mask_moistc_in" name="moistc" operation="instant" grid_ref="grid_inputfile_moistc" freq_offset="1ts" > (this &gt; 1e10) ? 0 : 1 </field>
+    </file>
+    
+    <file id="nudge_snow" name="nudge_snow" type="one_file" mode="read" output_freq="1d">
+      <field  id="snowdz_in" name="snowdz" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+      <field  id="snowrho_in" name="snowrho" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+      <field  id="snowtemp_in" name="snowtemp" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+      <field  id="mask_snow_in" name="snowdz" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : 1 </field>
+    </file>
+    
+  </file_definition>
+
+
+  <!-- ========================================================================================================= -->
+  <!-- Definition of all field coming from files but now interpolated to the model grid.                         -->
+  <!-- ========================================================================================================= -->
+
+  <field_definition>
+
+    <field_group enabled="false" read_access="true">
+
+      <field_group id="soil_color" enabled="false">
+        <field id="soilcolor0" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 0 </field>
+        <field id="soilcolor1" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 1 </field>
+        <field id="soilcolor2" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 2 </field>
+        <field id="soilcolor3" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 3 </field>
+        <field id="soilcolor4" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 4 </field>
+        <field id="soilcolor5" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 5 </field>
+        <field id="soilcolor6" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 6 </field>
+        <field id="soilcolor7" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 7 </field>
+        <field id="soilcolor8" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 8 </field>
+        <field id="soilcolor9" field_ref="soilcolor" domain_ref="from_soil" > soilcolor == 9 </field>
+      </field_group>
+
+      <field_group id="soil_text" field_ref="soiltext" domain_ref="from_soil" enabled="true" read_access="true">
+        <field id="soiltext1"  > soiltext == 1 </field>
+        <field id="soiltext2"  > soiltext == 2 </field>
+        <field id="soiltext3"  > soiltext == 3 </field>
+        <field id="soiltext4"  > soiltext == 4 </field>
+        <field id="soiltext5"  > soiltext == 5 </field>
+        <field id="soiltext6"  > soiltext == 6 </field>
+        <field id="soiltext7"  > soiltext == 7 </field>
+        <field id="soiltext8"  > soiltext == 8 </field>
+        <field id="soiltext9"  > soiltext == 9 </field>
+        <field id="soiltext10" > soiltext == 10 </field>
+        <field id="soiltext11" > soiltext == 11 </field>
+        <field id="soiltext12" > soiltext == 12 </field>
+      </field_group>
+      
+      <!-- If soilbulk_mask .gt. min_sechiba, then renormalize by dividing with soilbulk_mask else set bulk_default.
+           soilbulk_mask interpolated to the model grid corresponds to the fraction of the grid cell covered by non-masked 
+           values in the input file. Where soilbulk_mask=0, no data where found on the source grid. -->
+      <field id="soilbulk_tmp"  field_ref="soilbulk_read" domain_ref="from_soilbulk" />
+      <field id="soilbulk_mask" field_ref="soilbulk_mask_read" domain_ref="from_soilbulk" read_access="true" enabled="true" />
+      <field id="soilbulk"      field_ref="soilbulk_tmp"  domain_ref="from_soilbulk" read_access="true" enabled="true"  > soilbulk_mask &gt; $min_sechiba ? soilbulk_tmp/soilbulk_mask : $bulk_default </field>
+
+      <!-- Same as for soilbulk -->
+      <field id="soilph_tmp"    field_ref="soilph_read"      domain_ref="from_soilph" />
+      <field id="soilph_mask"   field_ref="soilph_mask_read" domain_ref="from_soilph" read_access="true" enabled="true" />
+      <field id="soilph"      field_ref="soilph_tmp"  domain_ref="from_soilph" read_access="true" enabled="true"  > soilph_mask &gt; $min_sechiba ? soilph_tmp/soilph_mask : $ph_default </field>
+
+      <field id="frac_veget"      field_ref="maxvegetfrac_read" domain_ref="from_pft" read_access="true" enabled="true" />
+      <field id="frac_veget_frac" field_ref="maxvegetfrac_mask" domain_ref="from_pft" read_access="true" enabled="true" />
+
+      <field id="slope_tmp"           field_ref="pente_read"       domain_ref="from_topo"                                  />
+      <field id="frac_slope_interp"   field_ref="mask_pente_read"  domain_ref="from_topo" read_access="true" enabled="true"/>
+      <field id="reinf_slope_interp"                               domain_ref="from_topo" read_access="true" enabled="true"> (frac_slope_interp &gt; $min_sechiba ) ? 1-slope_tmp/(frac_slope_interp+1e-100) : $slope_default </field>
+
+      <field id="bg_alb_vis_tmp"   field_ref="bg_alb_vis_read"  domain_ref="from_albedo"  />
+      <field id="bg_alb_vis_interp" field_ref="bg_alb_vis_tmp"  read_access="true" enabled="true" > this == $missing_value ? $albbg_vis_default : this </field>
+
+      <field id="bg_alb_nir_tmp"    field_ref="bg_alb_nir_read"  domain_ref="from_albedo"  />
+      <field id="bg_alb_nir_interp" field_ref="bg_alb_nir_tmp"  read_access="true"  enabled="true" >  this == $missing_value ? $albbg_nir_default : this </field>
+      
+      <field id="lai_tmp"          field_ref="lai_read"      grid_ref="from_lai" />
+      <field id="frac_lai_interp"  field_ref="mask_lai_read" grid_ref="from_lai" read_access="true" enabled="true" />
+      <field id="lai_interp"       field_ref="lai_tmp"                           read_access="true" enabled="true"  >  lai_tmp/(frac_lai_interp+1e-100) </field>  <!-- renormalize -->
+      
+      <field id="N_qt_WRICE_year_interp"  field_ref="N_qt_WRICE_year_read"  domain_ref="from_fertilizer" read_access="true" enabled="true" />
+      <field id="N_qt_OTHER_year_interp"  field_ref="N_qt_OTHER_year_read"  domain_ref="from_fertilizer" read_access="true" enabled="true" />
+      
+      <field id="flx_co2_bbg_year_interp"  field_ref="flx_co2_bbg_year_read"  domain_ref="from_bbg_clim" read_access="true" enabled="true" />
+
+      <field id="reftemp_interp"  field_ref="reftemp_read"  domain_ref="from_reftemp" read_access="true" enabled="true" />
+
+      <field id="woodharvest_interp"  field_ref="woodharvest_read"  domain_ref="from_woodharvest" read_access="true" enabled="true" />
+      
+    </field_group>
+
+    <field_group id="orchidee_input_mc" grid_ref="grid_nslm_nstm">
+      <!-- Interpolate the mask. This gives now the fraction of the source area underlaying the model grid cell -->
+      <field id="mask_moistc_interp" field_ref="mask_moistc_in" read_access="true" />
+      <!-- Interpolate the variable. Note that where the source file had missing values, the variables was set to 0. Therefor normalization is needed.     -->
+      <!-- Normalize the interpolated values with the mask which corresponds to the fraction of underlaying valid source grid cells.                       -->
+      <!-- The default value 0.2 is used if the mask is 0. This is the case if no information at all was found on the source grid for the model grid cell. -->
+      <field id="moistc_tmp" field_ref="moistc_in"  />
+      <field id="moistc_interp" field_ref="moistc_tmp" read_access="true" > (mask_moistc_interp &lt; 1e-4) ? 0.2 : this/(mask_moistc_interp+1e-100) </field>
+    </field_group>
+
+    <field_group id="orchidee_input_snow" grid_ref="grid_nsnow2" >
+      <field id="mask_snow_interp" field_ref="mask_snow_in" read_access="true" />
+      <field id="snowdz_tmp" field_ref="snowdz_in" />
+      <!-- Set snowdz=0 where no information found on source grid, for all other points normlize with the fracion of underlaying source grid cells      -->
+      <field id="snowdz_interp" field_ref="snowdz_tmp" read_access="true" > (mask_snow_interp &lt; 1e-4) ? 0 : this/(mask_snow_interp+1e-100) </field>
+      <field id="snowrho_tmp" field_ref="snowrho_in" />
+      <!-- Set snowrho=50 where no information found on source grid, for all other points normlize with the fracion of underlaying source grid cells    -->
+      <field id="snowrho_interp" field_ref="snowrho_tmp" read_access="true" > (mask_snow_interp &lt; 1e-4) ? 50 : this/(mask_snow_interp+1e-100) </field>
+      <field id="snowtemp_tmp" field_ref="snowtemp_in" />
+      <!-- Set snowtemp=273 where no information found on source grid, for all other points normlize with the fracion of underlaying source grid cells  -->
+      <field id="snowtemp_interp" field_ref="snowtemp_tmp" read_access="true" > (mask_snow_interp &lt; 1e-4) ? 273 : this/(mask_snow_interp+1e-100) </field>
+    </field_group>
+ 
+  </field_definition>
+
+
+
+  <!-- =========================================================================================================== -->
+  <!-- Definition of a horizontal domain for each input file                                                       -->
+  <!-- =========================================================================================================== -->
+
+  <domain_definition>
+
+    <domain id="domain_inputfile_moistc" type="rectilinear">
+      <generate_rectilinear_domain />
+    </domain>
+    
+    <domain id="domain_inputfile_snow" type="rectilinear">
+      <generate_rectilinear_domain />
+    </domain>
+    
+    <domain id="from_soil" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false"/>
+    </domain>
+    
+    <domain id="from_soilbulk" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+
+    <domain id="from_soilph" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+        
+    <domain id="from_pft" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+    
+    <domain id="from_topo" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+    
+    <domain id="from_albedo" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="true" detect_missing_value="true"/>
+    </domain>
+    
+    <domain id="from_lai" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+    
+    <domain id="from_bbg_clim" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+    
+    <domain id="from_fertilizer" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+    
+    <domain id="from_reftemp" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+    
+    <domain id="from_woodharvest" domain_ref="domain_landpoints">
+      <interpolate_domain order="1" renormalize="false" />
+    </domain>
+    
+    <domain id="soil" type="rectilinear">
+      <!-- generate_rectilinear_domain bounds_lon_start="-180" bounds_lon_end="180" bounds_lat_start="-90" bounds_lat_end="90"/-->
+      <generate_rectilinear_domain bounds_lon_start="-180" bounds_lon_end="180" bounds_lat_start="90" bounds_lat_end="-90"/>
+    </domain>
+
+    <domain id="soilbulk" type="rectilinear">
+      <generate_rectilinear_domain bounds_lon_start="-180" bounds_lon_end="180" bounds_lat_start="90" bounds_lat_end="-90"/>/>
+    </domain>
+
+    <domain id="soilph" type="rectilinear">
+      <generate_rectilinear_domain bounds_lon_start="-180" bounds_lon_end="180" bounds_lat_start="90" bounds_lat_end="-90"/>/>
+    </domain>
+    
+    <domain id="pft" type="rectilinear">
+      <generate_rectilinear_domain/>
+    </domain>
+    
+    <domain id="topo" type="rectilinear">
+      <generate_rectilinear_domain/>
+    </domain>
+    
+    <domain id="albedo" type="rectilinear">
+      <generate_rectilinear_domain />
+    </domain>
+    
+    <domain id="lai" type="rectilinear">
+      <generate_rectilinear_domain/>
+    </domain>
+    
+    <domain id="bbg_clim" type="rectilinear">
+      <generate_rectilinear_domain/>
+    </domain>
+    
+    <domain id="fertilizer" type="rectilinear">
+      <generate_rectilinear_domain/>
+    </domain>
+
+    <domain id="reftemp" type="rectilinear">
+      <generate_rectilinear_domain/>
+    </domain>
+
+    <domain id="woodharvest" type="rectilinear">
+      <generate_rectilinear_domain/>
+    </domain>
+    
+  </domain_definition>
+
+
+  <!-- =========================================================================================================== -->
+  <!-- Definition of input grids                                                                        -->
+  <!-- =========================================================================================================== -->
+
+  <grid_definition>
+
+    <grid id="grid_inputfile_moistc">
+      <domain domain_ref="domain_inputfile_moistc"/>
+      <axis axis_ref="nslm" />
+      <axis axis_ref="nstm" />
+    </grid>  
+
+    <grid id="grid_inputfile_snow">
+      <domain domain_ref="domain_inputfile_snow"/>
+      <axis axis_ref="nsnow" />
+    </grid>  
+    
+    <grid id="from_lai">
+      <domain domain_ref="from_lai" />
+      <axis axis_ref="nvm" />
+      <axis axis_ref="lai_time" />
+    </grid>
+    
+    <grid id="lai">
+      <domain domain_ref="lai" />
+      <axis axis_ref="nvm" />
+      <axis axis_ref="lai_time" />
+    </grid>
+    
+    <grid id="grid_nsnow2">
+      <domain domain_ref="domain_landpoints" >
+        <interpolate_domain order="1"/>
+      </domain>
+      <axis axis_ref="nsnow" />
+    </grid>
+
+  </grid_definition>
+  
+  
+  <!-- =========================================================================================================== -->
+  <!-- Variable denfinition needed for interpolation of input files                                                -->
+  <!-- The values for below variables are set from the fortran code.                                               -->
+  <!-- =========================================================================================================== -->
+
+  <variable_definition>
+    
+    <variable id="slope_default" type="double">xxx</variable>
+    <variable id="slope_noreinf" type="double">xxx</variable>
+    <variable id="min_sechiba" type="double">xxx</variable>
+    <variable id="albbg_vis_default" type="double">xxx</variable>
+    <variable id="albbg_nir_default" type="double">xxx</variable>
+    <variable id="bulk_default" type="double">xxx</variable>
+    <variable id="ph_default" type="double">xxx</variable>
+    
+  </variable_definition>
+  
+
+</context>

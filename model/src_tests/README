@@ -1,0 +1,44 @@
+README
+
+src_tests contains several unittests from Orchidee. This folder works independently from the fcm tool due to technical requirements. Even though, the  makeorchidee_fcm option -unittest allows the compilation and execution of the tests.
+
+Use the tests located in the folder as an example to introduce new ones.
+
+ * pFUnit Installation
+
+pFUnit is a fortran unit test library.  
+In order to install pFUnit follow the steps shown in the guide:
+
+https://github.com/Goddard-Fortran-Ecosystem/pFUnit
+
+Note: compile in serial mode
+
+ * How to run the tests (done in ADA hpc)
+
+- Bring pFUnit library to ADA
+Copy the files from another machine
+
+- Define the Environment variables:
+export F90_VENDOR=INTEL
+export F90=ifort
+
+- Compile
+make tests
+
+- Install 
+make install INSTALL_DIR=$HOME/own_libs/pffunit-serial
+
+- Define in your .basrch
+export PFUNIT=/linkhome/rech/lmd/rlmd998/own_libs/pffunit-serial
+
+- Compile orchidee
+cd /go/to/orchidee/folder
+
+- Go the tests folder
+cd src_tests
+
+- Compile the tests
+make clean && make tests.x
+
+- Run the tests
+./tests.x

@@ -1,0 +1,36 @@
+<!-- =========================================================================================================== -->
+<!-- file_def_input_orchidee.xml : Definition of input files                                                     -->
+<!--                                                                                                             -->
+<!-- This file contains the definition of input files and there variables for ORCHIDEE read by XIOS.             -->
+<!-- The section for input files should not be modified. The model will enable true or false these files         -->
+<!-- according to if they are needed by the simulation set up.                                                   -->
+<!--                                                                                                             -->
+<!--                                                                                                             -->
+<!-- $HeadURL$         -->
+<!-- $Date$                                                       -->
+<!-- $Revision$                                                                                           -->
+<!-- =========================================================================================================== -->
+
+<file_definition type="one_file" par_access="collective" enabled=".TRUE." min_digits="4">
+
+  <!-- ========================================================================================================= -->
+  <!-- Definition of input files                                                                                 -->
+  <!-- The input files are activated or desactivated from the source code depending on simulation set up.        -->
+  <!-- The variables are here on the input source grid.                                                          -->
+  <!-- Values higher than 1e10 are considered as missing and the field is then set to 0. A normalization using   -->
+  <!-- the fraction of the grid cell with valied values are done in the field_def_orchidee.xml. If only missing  -->
+  <!-- values are found for a grid cell, then a default value is set, also in field_def_orchidee.xml.            -->
+  <!-- ========================================================================================================= -->
+  <file id="nudge_moistc" name="nudge_moistc" type="one_file" mode="read" output_freq="1d">
+    <field  id="moistc_in" name="moistc" operation="instant" grid_ref="grid_inputfile_moistc" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+    <field  id="mask_moistc_in" name="moistc" operation="instant" grid_ref="grid_inputfile_moistc" freq_offset="1ts" > (this &gt; 1e10) ? 0 : 1 </field>
+  </file>
+
+  <file id="nudge_snow" name="nudge_snow" type="one_file" mode="read" output_freq="1d">
+    <field  id="snowdz_in" name="snowdz" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+    <field  id="snowrho_in" name="snowrho" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+    <field  id="snowtemp_in" name="snowtemp" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : this </field>
+    <field  id="mask_snow_in" name="snowdz" operation="instant" grid_ref="grid_inputfile_snow" freq_offset="1ts" > (this &gt; 1e10) ? 0 : 1 </field>
+  </file>
+  
+</file_definition>

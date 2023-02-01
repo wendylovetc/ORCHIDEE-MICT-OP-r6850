@@ -1,0 +1,60 @@
+! ===================================================================================================\n
+! MODULE        : vegetation
+!
+! CONTACT       : orchidee-help _at_ listes.ipsl.fr
+!
+! LICENCE       : IPSL (2006)
+! This software is governed by the CeCILL licence see ORCHIDEE/ORCHIDEE_CeCILL.LIC
+!
+!>\BRIEF        Unit tests for vegetation module 
+!!
+!!\n DESCRIPTION : 
+!!
+!! RECENT CHANGE(S) : None
+!!
+!! REFERENCE(S) :
+!!
+!! SVN          :
+!! $HeadURL: svn://forge.ipsl.jussieu.fr/orchidee/branches/ORCHIDEE-MICT/ORCHIDEE/src_sechiba/hydrol.f90 $
+!! $Date: 2018-10-09 11:43:16 +0200 (Tue, 09 Oct 2018) $
+!! $Revision: 5477 $
+!! \n
+!_ ===============================================================================================\n
+ 
+ 
+!! ================================================================================================================================
+!! SUBROUTINE 	: test_equal_division_distribution 
+!!
+!>\BRIEF         
+!!
+!! DESCRIPTION : 
+!!
+!! MAIN OUTPUT VARIABLE(S) :  
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+@test
+  SUBROUTINE tests_vegetation_nobio_to_bg()
+    use pfunit_mod
+    use vegetation, only: vegetation_nobio_to_bg
+    implicit none
+
+    !! 0. Variable and parameter declaration
+
+    !! 0.4 Local variables
+    REAL, DIMENSION(1,4)             :: calc 
+    REAL, DIMENSION(1,4)             :: init = (/ 0., 0.2, 0.2, 0.3 /)
+    REAL, DIMENSION(1,4), PARAMETER  :: expected = (/ 0.3, 0.2, 0.2, 0.3 /) 
+
+  !_ ======================================================================================================
+
+    CALL vegetation_nobio_to_bg(init, calc)
+
+    @assertEqual(expected, calc,tolerance=epsilon(expected))
+          
+  END SUBROUTINE tests_vegetation_nobio_to_bg
+
+  

@@ -1,0 +1,132 @@
+! ===================================================================================================\n
+! MODULE        : cforcing
+!
+! CONTACT       : orchidee-help _at_ listes.ipsl.fr
+!
+! LICENCE       : IPSL (2006)
+! This software is governed by the CeCILL licence see ORCHIDEE/ORCHIDEE_CeCILL.LIC
+!
+!>\BRIEF        Cforcing Unit tests
+!!
+!!\n DESCRIPTION :  Failing Test case to calculate the timestep for the stomate_Cforcing_... files.  Identified bug in the code. After 150 years of Orchidee run using the gregorian calendar,
+!!              the use of the average length year cannot provide an acurate year.
+!!              Due to this wrong calculation the days could be shifted. At the
+!!              end of the year, the timestep calculated would start over again.
+!!              ticket:550
+!!
+!! RECENT CHANGE(S) : None
+!!
+!! REFERENCE(S) :
+!!
+!! SVN          :
+!! $HeadURL: svn://forge.ipsl.jussieu.fr/orchidee/branches/ORCHIDEE-MICT/ORCHIDEE/src_sechiba/hydrol.f90 $
+!! $Date: 2018-10-09 11:43:16 +0200 (Tue, 09 Oct 2018) $
+!! $Revision: 5477 $
+!! \n
+!_ ===============================================================================================\n
+ 
+
+ 
+!! ================================================================================================================================
+!! SUBROUTINE 	: tests_cforcing_calc_last_index
+!!
+!>\BRIEF        Calculate stomate_cforcing timestep 
+!!
+!! DESCRIPTION : ticket:550
+!!
+!! MAIN OUTPUT VARIABLE(S) : 
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+@test
+  SUBROUTINE tests_cforcing_calc_last_index_1year()
+
+    use pfunit_mod
+    use ioipsl_para
+    use time
+    use stomate_io_carbon_permafrost
+    implicit none
+
+
+    !! 0. Variable and parameter declaration
+
+    !! 0.1 Input variables
+
+    !! 0.4 Local variables
+    INTEGER    :: days_since_beg !! days from the begin of the simulation
+    REAL       :: one_year_len   !! One year length in days 
+    INTEGER    :: nbyear     !! Total number of years to account
+    REAL       :: dt_forcesoil !! forcesoil timesteps
+    INTEGER    :: tsteps !! cforcing timesteps
+
+    INTEGER    :: day_number 
+
+    INTEGER    :: cforcing_tstep !, tyear, tmonth, tday, restart_time !!
+
+  !_ ======================================================================================================
+
+    tsteps = 15 ! FORCESOIL_STEP_
+    one_year_len = ioget_year_len(2048) 
+    nbyear = 1
+    dt_forcesoil = one_year_len/REAL(tsteps)
+
+    ! Iterator on every day
+    day_number= time_get_day_of_year(2048, 12, 31)
+    cforcing_tstep = stomate_io_tstep_index(day_number, 2048, 1, tsteps)
+
+    @assertEqual(tsteps, cforcing_tstep)
+          
+  END SUBROUTINE tests_cforcing_calc_last_index_1year
+  
+!! ================================================================================================================================
+!! SUBROUTINE 	: tests_cforcing_calc_last_index_2years
+!!
+!>\BRIEF        Calculate stomate_cforcing timestep 
+!!
+!! DESCRIPTION : ticket:550
+!!
+!! MAIN OUTPUT VARIABLE(S) : 
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+@test
+  SUBROUTINE tests_cforcing_calc_last_index_2years_leap()
+
+   use pfunit_mod
+   use ioipsl_para
+   use time
+   use stomate_io_carbon_permafrost
+   implicit none
+
+    !! 0. Variable and parameter declaration
+
+    !! 0.1 Input variables
+
+    !! 0.4 Local variables
+    INTEGER    :: days_since_beg !! days from the begin of the simulation
+    INTEGER    :: nbyear     !! Total number of years to account
+    INTEGER    :: tsteps !! cforcing timesteps
+
+    INTEGER    :: day_number 
+
+    INTEGER    :: cforcing_tstep !, tyear, tmonth, tday, restart_time !!
+
+  !_ ======================================================================================================
+
+    tsteps = 15 ! FORCESOIL_STEP_
+    nbyear = 2
+
+    ! Iterator on every day
+    day_number = ioget_year_len(2049) + time_get_day_of_year(2050, 12, 31)
+    cforcing_tstep = stomate_io_tstep_index(day_number, 2049, 2, tsteps )
+
+    @assertEqual(30, cforcing_tstep)
+          
+  END SUBROUTINE tests_cforcing_calc_last_index_2years_leap
+  

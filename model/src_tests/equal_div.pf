@@ -1,0 +1,138 @@
+! ===================================================================================================\n
+! MODULE        : test_equal_division
+!
+! CONTACT       : orchidee-help _at_ listes.ipsl.fr
+!
+! LICENCE       : IPSL (2006)
+! This software is governed by the CeCILL licence see ORCHIDEE/ORCHIDEE_CeCILL.LIC
+!
+!>\BRIEF        Unit tests for equal_division type
+!!
+!!\n DESCRIPTION : 
+!!
+!! RECENT CHANGE(S) : None
+!!
+!! REFERENCE(S) :
+!!
+!! SVN          :
+!! $HeadURL: svn://forge.ipsl.jussieu.fr/orchidee/branches/ORCHIDEE-MICT/ORCHIDEE/src_sechiba/hydrol.f90 $
+!! $Date: 2018-10-09 11:43:16 +0200 (Tue, 09 Oct 2018) $
+!! $Revision: 5477 $
+!! \n
+!_ ===============================================================================================\n
+ 
+ 
+!! ================================================================================================================================
+!! SUBROUTINE 	: test_equal_division_distribution
+!!
+!>\BRIEF         Test the division and the distribution to the remainder
+!!
+!! DESCRIPTION : 4, 18
+!!
+!! MAIN OUTPUT VARIABLE(S) :  4, 4, 5, 5
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+@test
+  SUBROUTINE test_equal_division_distribution()
+    use pfunit_mod
+    use math
+    implicit none
+
+    !! 0. Variable and parameter declaration
+
+    !! 0.4 Local variables
+    INTEGER :: daysFound
+    TYPE(t_equal_division) :: equal_div
+
+    INTEGER, PARAMETER :: expected(4) = (/ 4, 4, 5, 5/)
+    INTEGER :: found(4)
+
+  !_ ======================================================================================================
+
+    equal_div = t_equal_division(4, 18) ! expected output, (4,4,5,5)
+    found = equal_div%get_distr()
+
+    @assertEqual(expected, found)
+          
+  END SUBROUTINE test_equal_division_distribution
+
+!! ================================================================================================================================
+!! SUBROUTINE 	: test_equal_division_accumulate
+!!
+!>\BRIEF         test the auxiliar accumulated array
+!!
+!! DESCRIPTION : 4, 18
+!!
+!! MAIN OUTPUT VARIABLE(S) : 
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+@test
+  SUBROUTINE test_equal_division_accumulate()
+    use pfunit_mod
+    use math
+    implicit none
+
+    !! 0. Variable and parameter declaration
+
+    !! 0.4 Local variables
+    INTEGER :: daysFound
+    TYPE(t_equal_division) :: equal_div
+
+    INTEGER, PARAMETER :: expected(4) = (/ 4, 8, 13, 18/)
+    INTEGER :: found(4)
+
+  !_ ======================================================================================================
+
+    equal_div = t_equal_division(4, 18) ! expected output, (4,4,5,5)
+    found = equal_div%get_accum()
+
+    @assertEqual(expected, found)
+          
+  END SUBROUTINE test_equal_division_accumulate
+
+!! ================================================================================================================================
+!! SUBROUTINE 	: test_equal_division_get_group
+!!
+!>\BRIEF         Test at which group a number will be placed
+!!
+!! DESCRIPTION : 4, 18
+!!
+!! MAIN OUTPUT VARIABLE(S) : 
+!!
+!! REFERENCE(S) : 
+!!
+!! FLOWCHART    : None
+!! \n
+!_ ================================================================================================================================
+@test
+  SUBROUTINE test_equal_division_get_group()
+    use pfunit_mod
+    use math
+    implicit none
+
+    !! 0. Variable and parameter declaration
+
+    !! 0.4 Local variables
+    INTEGER :: daysFound
+    TYPE(t_equal_division) :: equal_div
+
+    INTEGER, PARAMETER :: expected = 3
+    INTEGER :: found
+
+  !_ ======================================================================================================
+
+    equal_div = t_equal_division(4, 18) ! expected output, (4,4,5,5)
+    found = equal_div%get(12)
+
+    @assertEqual(expected, found)
+          
+  END SUBROUTINE test_equal_division_get_group
+  

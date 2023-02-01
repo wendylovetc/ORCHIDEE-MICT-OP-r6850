@@ -1,0 +1,7 @@
+ADD_TEST_SUITE(equal_div_suite)
+ADD_TEST_SUITE(vegetation_suite)
+ADD_TEST_SUITE(cforcing_suite)
+ADD_TEST_SUITE(time_gregorian_mod_suite)
+ADD_TEST_SUITE(time_julian_mod_suite)
+ADD_TEST_SUITE(ioipsl_ioget_mon_len_gregorian_mod_suite)
+ADD_TEST_SUITE(ioipsl_ioget_mon_len_julian_mod_suite)
